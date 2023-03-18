@@ -13,15 +13,15 @@
 ;; Last updated - July 24, 2019
 
 (ns
-  #^{:author "Mark Engelberg",
-     :doc "Efficient, functional algorithms for generating lazy
-sequences for common combinatorial functions. (See the source code 
+    #^{:author "Mark Engelberg",
+       :doc "Efficient, functional algorithms for generating lazy
+sequences for common combinatorial functions. (See the source code
 for a longer description.)"}
-  clojure.math.combinatorics
+    clojure.math.combinatorics
   (:refer-clojure :exclude [update]))
 
 (comment
-"  
+  "
 (combinations items t) - A lazy sequence of all the unique
 ways of taking t different elements from items.
 Example: (combinations [1 2 3] 2) -> ((1 2) (1 3) (2 3))
@@ -87,7 +87,7 @@ I also restricted myself to algorithms that return results in a standard order. 
 
 Most of these algorithms are derived from algorithms found in Knuth's wonderful Art of Computer Programming books (specifically, the volume 4 fascicles), which present fast, iterative solutions to these common combinatorial problems.  Unfortunately, these iterative versions are somewhat inscrutable.  If you want to better understand these algorithms, the Knuth books are the place to start.
 "
-)
+  )
 
 #?(:cljs (def *' *)) ; because Clojurescript doesn't have *'
 #?(:cljs (def +' +)) ; because Clojurescript doesn't have +'
@@ -144,7 +144,7 @@ Most of these algorithms are derived from algorithms found in Knuth's wonderful 
           (conj distribution [index quantity-to-distribute total])
           (recur (conj distribution [index mi (+ already-distributed mi)])
                  (inc index)
-                 (+ already-distributed mi))))))) 
+                 (+ already-distributed mi)))))))
 
 ;; Helper function for bounded-distributions
 (defn- next-distribution [m total distribution]
@@ -153,7 +153,7 @@ Most of these algorithms are derived from algorithms found in Knuth's wonderful 
       (< index (dec (count m)))
       (if (= this-bucket 1)
         (conj (pop distribution) [(inc index) 1 this-and-to-the-left])
-        (conj (pop distribution) 
+        (conj (pop distribution)
               [index (dec this-bucket) (dec this-and-to-the-left)]
               [(inc index) 1 this-and-to-the-left])),
       ; so we have stuff in the last bucket
@@ -162,21 +162,21 @@ Most of these algorithms are derived from algorithms found in Knuth's wonderful 
       (loop [distribution (pop distribution)],
         (let
           [[index this-bucket this-and-to-the-left] (peek distribution),
-           distribution (if (= this-bucket 1) 
+           distribution (if (= this-bucket 1)
                           (pop distribution)
                           (conj (pop distribution)
                                 [index (dec this-bucket) (dec this-and-to-the-left)]))],
           (cond
-            (<= (- total (dec this-and-to-the-left)) (apply + (subvec m (inc index))))       
+            (<= (- total (dec this-and-to-the-left)) (apply + (subvec m (inc index))))
             (distribute m (inc index) total distribution (dec this-and-to-the-left)),
-            
+
             (seq distribution) (recur distribution)
             :else nil))))))
-      
+
 ;; Helper function for multi-comb
 (defn- bounded-distributions
   [m t]
-  (let [step 
+  (let [step
         (fn step [distribution]
           (cons distribution
                 (lazy-seq (when-let [next-step (next-distribution m t distribution)]
@@ -197,16 +197,16 @@ Most of these algorithms are derived from algorithms found in Knuth's wonderful 
       (join
        (for [[index this-bucket _] q]
          (repeat this-bucket (v index)))))))
-                
+
 (defn combinations
   "All the unique ways of taking t different elements from items"
-  [items t]      
+  [items t]
   (let [v-items (vec (reverse items))]
     (if (zero? t) (list ())
       (let [cnt (count items)]
         (cond (> t cnt) nil
               (= t 1) (for [item (distinct items)] (list item))
-              (all-different? items) (if (= t cnt) 
+              (all-different? items) (if (= t cnt)
                                         (list (seq items))
                                         (map #(map v-items %) (index-combinations t cnt))),
               :else (multi-comb items t))))))
@@ -301,16 +301,16 @@ In prior versions of the combinatorics library, there were two similar functions
     (map (partial map v) (lex-permutations indices))))
 
 (defn permutations
-  "All the distinct permutations of items, lexicographic by index 
+  "All the distinct permutations of items, lexicographic by index
   (special handling for duplicate items)."
   [items]
   (cond
     (sorted-numbers? items) (lex-permutations items),
-    
+
     (all-different? items)
     (let [v (vec items)]
       (map #(map v %) (lex-permutations (range (count v)))))
-    
+
     :else
     (multi-perm items)))
 
@@ -334,11 +334,11 @@ In prior versions of the combinatorics library, there were two similar functions
 (defn- factorial-numbers
   "Input is a non-negative base 10 integer, output is the number in the
 factorial number system (http://en.wikipedia.org/wiki/Factorial_number_system)
-expressed as a list of 'digits'" 
+expressed as a list of 'digits'"
   [n]
   {:pre [(integer? n) (not (neg? n))]}
   (loop [n n, digits (), divisor 1]
-    (if (zero? n) 
+    (if (zero? n)
       digits
       (let [q (quot n divisor), r (rem n divisor)]
         (recur q (cons r digits) (inc divisor))))))
@@ -349,7 +349,7 @@ expressed as a list of 'digits'"
       (recur (conj acc (first l)) (rest l) (dec n)))))
 
 (defn- nth-permutation-distinct
-  "Input should be a sorted sequential collection l of distinct items, 
+  "Input should be a sorted sequential collection l of distinct items,
 output is nth-permutation (0-based)"
   [l n]
   (assert (< n (factorial (count l)))
@@ -363,7 +363,7 @@ output is nth-permutation (0-based)"
       (if (empty? indices) perm
         (let [i (first indices),
               item (nth l i)]
-          (recur (rest indices) (remove-nth l i) (conj perm item))))))) 
+          (recur (rest indices) (remove-nth l i) (conj perm item)))))))
 
 ;; Now we generalize to collections with duplicates
 
@@ -375,9 +375,9 @@ output is nth-permutation (0-based)"
 (defn count-permutations
   "Counts the number of distinct permutations of l"
   [l]
-  (if (all-different? l) 
+  (if (all-different? l)
     (factorial (count l))
-    (count-permutations-from-frequencies (frequencies l))))    
+    (count-permutations-from-frequencies (frequencies l))))
 
 (defn- initial-perm-numbers
   "Takes a sorted frequency map and returns how far into the sequence of
@@ -418,18 +418,18 @@ lexicographic permutations you get by varying the first item"
 
 (defn- factorial-numbers-with-duplicates
   "Input is a non-negative base 10 integer n, and a sorted frequency map freqs.
-Output is a list of 'digits' in this wacky duplicate factorial number system" 
+Output is a list of 'digits' in this wacky duplicate factorial number system"
   [n freqs]
   (loop [n n, digits [], freqs freqs]
     (if (zero? n) (into digits (repeat (apply + (vals freqs)) 0))
-      (let [[index remainder] 
+      (let [[index remainder]
             (index-remainder (initial-perm-numbers freqs) n)]
         (recur remainder (conj digits index)
                (let [nth-key (nth (keys freqs) index)]
                  (dec-key freqs nth-key)))))))
 
 (defn- nth-permutation-duplicates
-  "Input should be a sorted sequential collection l of distinct items, 
+  "Input should be a sorted sequential collection l of distinct items,
 output is nth-permutation (0-based)"
   [l n]
   (assert (< n (count-permutations l))
@@ -441,7 +441,7 @@ output is nth-permutation (0-based)"
       (let [i (first indices),
             item (nth (keys freqs) i)]
         (recur (dec-key freqs item)
-               (rest indices) 
+               (rest indices)
                (conj perm item))))))
 
 ;; Now we create the public version, which detects which underlying algorithm to call
@@ -450,7 +450,7 @@ output is nth-permutation (0-based)"
   "(nth (permutations items)) but calculated more directly."
   [items n]
   (if (sorted-numbers? items)
-    (if (all-different? items) 
+    (if (all-different? items)
       (nth-permutation-distinct items n)
       (nth-permutation-duplicates items n))
     (if (all-different? items)
@@ -472,7 +472,7 @@ output is nth-permutation (0-based)"
     (= n (count-permutations items)) ()
     :else
     (if (sorted-numbers? items)
-      (if (all-different? items) 
+      (if (all-different? items)
         (vec-lex-permutations (nth-permutation-distinct items n))
         (vec-lex-permutations (nth-permutation-duplicates items n)))
       (if (all-different? items)
@@ -484,7 +484,7 @@ output is nth-permutation (0-based)"
               indices (join
                        (for [i (range (count v))]
                          (repeat (f (v i)) i)))]
-          (map (partial map v) 
+          (map (partial map v)
                (vec-lex-permutations
                  (nth-permutation-duplicates indices n))))))))
 
@@ -503,7 +503,7 @@ output is nth-permutation (0-based)"
 (defn- ^{:dynamic true} count-combinations-from-frequencies [freqs t]
   (let [counts (vals freqs)
         sum (apply + counts)]
-    (cond 
+    (cond
       (zero? t) 1
       (= t 1) (count freqs)
       (every? #{1} counts) (n-take-k (count freqs) t)
@@ -539,14 +539,14 @@ so that we can memoize over a series of calls."
 
 (defn- count-subsets-unmemoized
   [items]
-  (cond 
+  (cond
     (empty? items) 1
     (all-different? items) (expt-int 2 (count items))
     :else (apply +' (for [i (range 0 (inc (count items)))]
                         (count-combinations-unmemoized items i)))))
 
 (defn count-subsets
-  "(count (subsets items)) but computed more directly"  
+  "(count (subsets items)) but computed more directly"
   [items]
   (binding [count-combinations-from-frequencies
             (memoize count-combinations-from-frequencies)]
@@ -562,19 +562,19 @@ where items is a collection of distinct elements"
          n n]
     (if (or (zero? n) (empty? items)) (into comb (take t items))
       (let [dc-dt (n-take-k (dec (count items)) (dec t))]
-        (if (< n dc-dt) 
+        (if (< n dc-dt)
           (recur (conj comb (first items)) (rest items) (dec t) n)
           (recur comb (rest items) t (- n dc-dt)))))))
-                         
+
 (defn- nth-combination-freqs
   "The nth element of the sequence of t-combinations of the multiset
 represented by freqs"
   [freqs t n]
   (loop [comb [],
          freqs freqs,
-         t t, 
+         t t,
          n n]
-    (if (or (zero? n) (empty? freqs)) 
+    (if (or (zero? n) (empty? freqs))
       (into comb (take t (join (for [[k v] freqs] (repeat v k)))))
       (let [first-key (first (keys freqs)),
             remove-one-key (dec-key freqs first-key)
@@ -582,12 +582,12 @@ represented by freqs"
         (if (< n dc-dt)
           (recur (conj comb first-key) remove-one-key (dec t) n)
           (recur comb (dissoc freqs first-key) t (- n dc-dt)))))))
-              
+
 (defn nth-combination
   "The nth element of the sequence of t-combinations of items"
   [items t n]
   (assert (< n (count-combinations items t))
-          (print-str n "is too large. Input has only" 
+          (print-str n "is too large. Input has only"
                      (count-combinations-unmemoized items t) "combinations."))
   (if (all-different? items)
     (nth-combination-distinct items t n)
@@ -609,27 +609,27 @@ represented by freqs"
     (let [num-combinations (count-combinations items size)]
       (if (< n num-combinations)
         (nth-combination items size n)
-        (recur (inc size) (- n num-combinations)))))) 
+        (recur (inc size) (- n num-combinations))))))
 
 ;; Now let's go the other direction, from a sortable collection to the nth
 ;; position in which we would find the collection in the lexicographic sequence
 ;; of permutations
-    
+
 (defn- list-index
   "The opposite of nth, i.e., from an item in a list, find the n"
   [l item]
   (loop [l l, n 0]
     (assert (seq l))
     (if (= item (first l)) n
-      (recur (rest l) (inc n)))))
+        (recur (rest l) (inc n)))))
 
 (defn- permutation-index-distinct
   [l]
   (loop [l l, index #?(:clj (Long/valueOf 0) :cljs 0), n (dec (count l))]
     (if (empty? l) index
-      (recur (rest l) 
-             (+' index (*' (factorial n) (list-index (sort l) (first l))))
-             (dec n)))))
+        (recur (rest l)
+               (+' index (*' (factorial n) (list-index (sort l) (first l))))
+               (dec n)))))
 
 (defn- permutation-index-duplicates
   [l]
@@ -688,54 +688,54 @@ represented by freqs"
 
 (defn- growth-strings-H
   ([n r s] ; H1
-           (growth-strings-H n
-                             (init n s)
-                             (vec (repeat n 1))
-                             r
-                             s))
+   (growth-strings-H n
+                     (init n s)
+                     (vec (repeat n 1))
+                     r
+                     s))
   ([n a b r s]
-    (cons a   ; begin H2
-          (lazy-seq
-            (if (and (> (peek b) (peek a))
-                     (if r (< (peek a) (dec r)) true)) ; end H2
-              (growth-strings-H n (update a (dec n) inc) b r s)  ; H3
-              (let [j (loop [j (- n 2)] ; begin H4
-                        (if (and (< (a j) (b j))
-                                 (if r
-                                   (< (a j) (dec r))
-                                   true)
-                                 (if s
-                                   (<= (- s (b j) (reify-bool (== (inc (a j)) (b j)))) (- n j))
-                                   true))
-                          j
-                          (recur (dec j))))] ; end H4
-                (if (zero? j) ;begin H5
-                  ()
-                  (let [a (update a j inc) ; end H5
-                        x (when s
-                            (- s
-                               (+ (b j)
-                                  (reify-bool (= (a j) (b j))))))
-                        [a b] (loop [a a
-                                     b b
-                                     i (inc j)
-                                     current-max (+ (b j)
-                                                    (reify-bool (== (b j) (a j))))]
-                                (cond
-                                  (== i n) [a b]
-                                  
-                                  (and s (> i (- (- n x) 1)))
-                                  (let [new-a-i (+ (- i n) s)]
-                                    (recur (assoc a i new-a-i)
-                                           (assoc b i current-max)
-                                           (inc i)
-                                           (max current-max (inc new-a-i))))
-                                  
-                                  :else (recur (assoc a i 0)
-                                               (assoc b i current-max)
-                                               (inc i)
-                                               current-max)))]
-                    (growth-strings-H n a b r s))))))))) ;end H6
+   (cons a   ; begin H2
+         (lazy-seq
+          (if (and (> (peek b) (peek a))
+                   (if r (< (peek a) (dec r)) true)) ; end H2
+            (growth-strings-H n (update a (dec n) inc) b r s)  ; H3
+            (let [j (loop [j (- n 2)] ; begin H4
+                      (if (and (< (a j) (b j))
+                               (if r
+                                 (< (a j) (dec r))
+                                 true)
+                               (if s
+                                 (<= (- s (b j) (reify-bool (== (inc (a j)) (b j)))) (- n j))
+                                 true))
+                        j
+                        (recur (dec j))))] ; end H4
+              (if (zero? j) ;begin H5
+                ()
+                (let [a (update a j inc) ; end H5
+                      x (when s
+                          (- s
+                             (+ (b j)
+                                (reify-bool (= (a j) (b j))))))
+                      [a b] (loop [a a
+                                   b b
+                                   i (inc j)
+                                   current-max (+ (b j)
+                                                  (reify-bool (== (b j) (a j))))]
+                              (cond
+                                (== i n) [a b]
+
+                                (and s (> i (- (- n x) 1)))
+                                (let [new-a-i (+ (- i n) s)]
+                                  (recur (assoc a i new-a-i)
+                                         (assoc b i current-max)
+                                         (inc i)
+                                         (max current-max (inc new-a-i))))
+
+                                :else (recur (assoc a i 0)
+                                             (assoc b i current-max)
+                                             (inc i)
+                                             current-max)))]
+                  (growth-strings-H n a b r s))))))))) ;end H6
 
 (defn- lex-partitions-H
   [N & {from :min to :max}]
@@ -747,7 +747,7 @@ represented by freqs"
           to (if (and to (>= to N)) nil to)]
       (cond
         (not (<= 1 (or from 1) (or to N) N)) ()
-        
+
         (= N 0) '(())
         (= N 1) '(([0]))
         (= to 1) `((~(range N)))
@@ -801,77 +801,79 @@ represented by freqs"
 
 (defn- multiset-partitions-M
   ([multiset r s] ; M1
-                  (let [n (apply + (vals multiset))
-                        m (count multiset)
-                        f []
-                        c []
-                        u []
-                        v []
-                        ; these vectors will grow over time, as new values are assoc'd into the next spots.
-                        [c u v] (loop [j 0, c c, u u, v v]
-                                  (if (= j m)
-                                    [c u v]
-                                    (recur (inc j)
-                                           (assoc c j (inc j))
-                                           (assoc u j (multiset (inc j)))
-                                           (assoc v j (multiset (inc j))))))
-                        a 0, b m, l 0
-                        f (assoc f 0 0, 1 m)
-                        stack ()]
-                    (multiset-partitions-M n m f c u v a b l r s)))
+   (let [n (apply + (vals multiset))
+         m (count multiset)
+         f []
+         c []
+         u []
+         v []
+         ;; these vectors will grow over time, as new values are assoc'd into the next spots.
+         [c u v] (loop [j 0, c c, u u, v v]
+                   (if (= j m)
+                     [c u v]
+                     (recur (inc j)
+                            (assoc c j (inc j))
+                            (assoc u j (multiset (inc j)))
+                            (assoc v j (multiset (inc j))))))
+         a 0, b m, l 0
+         f (assoc f 0 0, 1 m)]
+     (multiset-partitions-M n m f c u v a b l r s)))
   ([n m f c u v a b l r s]
-    (let [[u v c j k] (loop [j a, k b, x false     ; M2
-                             u u, v v, c c]
+   (let [[u' v' c' k] (loop [j (long a)
+                             k (long b)
+                             x false     ; M2
+                             u u
+                             v v
+                             c c]
                         (if (>= j b)
-                          [u v c j k]
-                          (let [u (assoc u k (- (u j) (v j)))]
-                            (if (= (u k) 0)
-                              (recur (inc j), k, true
-                                     u, v, c)
-                              (if-not x
-                                (let [c (assoc c k (c j))
-                                      v (assoc v k (min (v j) (u k)))
-                                      x (< (u k) (v j))
-                                      k (inc k)
-                                      j (inc j)]
-                                  (recur j, k, x
-                                         u, v, c))
-                                (let [c (assoc c k (c j))
-                                      v (assoc v k (u k))
-                                      k (inc k)
-                                      j (inc j)]
-                                  (recur j, k, x
-                                         u, v, c)))))))]
-      (cond  ; M3
-             (and r
-                  (> k b)
-                  (= l (dec r))) (m5 n m f c u v a b l r s)
-             (and s
-                  (<= k b)
-                  (< (inc l) s)) (m5 n m f c u v a b l r s)
-             (> k b) (let [a b, b k, l (inc l)
-                           f (assoc f (inc l) b)]
-                       (recur n m f c u v a b l r s))
-             :else (let [part (for [y (range (inc l))]
-                                (let [first-col (f y)
-                                      last-col (dec (f (inc y)))]
-                                  (into {} (for [z (range first-col (inc last-col))
-                                                 :when (not= (v z) 0)]
-                                             [(c z) (v z)]))))]
-                     (cons part ; M4
-                           (lazy-seq (m5 n m f c u v a b l r s))))))))
+                          [u v c k]
+                          (let [vj (nth v j nil)
+                                uk (- (nth u j nil) vj)]
+                            (if (zero? uk)
+                              (recur (inc j) k true u v c)
+                              (let [c (assoc c k (nth c j nil))
+                                    u (assoc u k uk)
+                                    v (assoc v k (if x uk (min vj uk)))
+                                    x (or x (< uk vj))
+                                    j (inc j)
+                                    k (inc k)]
+                                (recur j k x u v c))))))]
+     (cond  ; M3
+       (and r
+            (> k b)
+            (= l (dec r))) (m5 n m f c u v a b l r s)
+       (and s
+            (<= k b)
+            (< (inc l) s)) (m5 n m f c u v a b l r s)
+       (> k b) (let [a b, b k, l (inc l)
+                     f (assoc f (inc l) b)]
+                 (recur n m f c' u' v' a b l r s))
+       ;; TODO broken somehow...
+       :else (let [part (for [[start end] (partition 2 1 f)]
+                          (zipmap
+                           (subvec c start end)
+                           (subvec v start end)))]
+               (cons part ; M4
+                     (lazy-seq
+                      (m5 n m f c u v a b l r s))))))))
 
 (defn- m5  ; M5
   [n m f c u v a b l r s]
-  (let [j (loop [j (dec b)]
-            (if (not= (v j) 0)
+  (let [j (loop [j (long (dec b))]
+            (if (zero? (nth v j nil))
+              (recur (dec j))
               j
-              (recur (dec j))))]
+              ))]
     (cond
+      (and r (>= (inc l) r))
+      (m6 n m f c u v a b l r s)
+
       (and r
            (= j a)
            (< (* (dec (v j)) (- r l))
-              (u j))) (m6 n m f c u v a b l r s)
+              (u j)))
+      (m6 n m f c u v a b l r s)
+
       (and (= j a)
            (= (v j) 1)) (m6 n m f c u v a b l r s)
       :else (let [v (update v j dec)
@@ -883,23 +885,30 @@ represented by freqs"
                         v
                         (let [k (first ks)]
                           (recur (rest ks)
-                                 (assoc v k (u k))))))
-                  min-partitions-after-this (if s (- s (inc l)) 0)
-                  amount-to-dec (if s (max 0 (- min-partitions-after-this diff-uv)) 0)
-                  v (if (= amount-to-dec 0)
-                      v
-                      (loop [k-1 (dec b), v v
-                             amount amount-to-dec]
-                        (let [vk (v k-1)]
-                          (if (> amount vk)
-                            (recur (dec k-1)
-                                   (assoc v k-1 0)
-                                   (- amount vk))
-                            (assoc v k-1 (- vk amount))))))]
-              (multiset-partitions-M n m f c u v a b l r s)))))
+                                 (assoc v k (u k))))))]
+              (if (and r
+                       (> (- b a) 1)
+                       (= 0 (v (inc a)))
+                       (= (- (u a) (v a))
+                          (* (- r (inc l))
+                             (v a))))
+                (m6 n m f c u v a b l r s)
+                (let [min-partitions-after-this (if s (- s (inc l)) 0)
+                      amount-to-dec (if s (max 0 (- min-partitions-after-this diff-uv)) 0)
+                      v (if (= amount-to-dec 0)
+                          v
+                          (loop [k-1 (dec b), v v
+                                 amount amount-to-dec]
+                            (let [vk (v k-1)]
+                              (if (> amount vk)
+                                (recur (dec k-1)
+                                       (assoc v k-1 0)
+                                       (- amount vk))
+                                (assoc v k-1 (- vk amount))))))]
+                  (multiset-partitions-M n m f c u v a b l r s)))))))
 
 (defn- m6  ; M6
-  [n m f c u v a b l r s]
+  [n m f c u v a _b l r s]
   (if (= l 0)
     ()
     (let [l (dec l)
@@ -925,14 +934,13 @@ represented by freqs"
         (= N 1) `(([~(first items)]))
         :else (let [start-multiset (into {} (for [i (range M)
                                                   :let [j (inc i)]]
-                                              [j (freqs (ditems i))]))
-                    parts (multiset-partitions-M start-multiset to from)]
-                (->> multiset
-                     (mapjoin (fn [[index numtimes]]
-                                (repeat numtimes (ditems (dec index)))))
-                     vec
-                     (for [multiset part])
-                     (for [part parts])))))))
+                                              [j (freqs (ditems i))]))]
+                (for [part (multiset-partitions-M start-multiset to from)]
+                  (for [multiset part]
+                    (into []
+                          (mapcat (fn [[index numtimes]]
+                                    (repeat numtimes (ditems (dec index)))))
+                          multiset))))))))
 
 (defn partitions
   "All the lexicographic distinct partitions of items.
